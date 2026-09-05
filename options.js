@@ -3,7 +3,7 @@ const keyInput = document.getElementById("apiKey");
 const saveBtn = document.getElementById("save");
 const status = document.getElementById("status");
 
-chrome.storage.sync.get({ baseUrl: "", apiKey: "", trigger: "menu", tvSeason: "first" }, (s) => {
+chrome.storage.sync.get({ baseUrl: "", apiKey: "", trigger: "menu", tvSeason: "latest" }, (s) => {
   if (s.baseUrl) urlInput.value = s.baseUrl;
   if (s.apiKey) keyInput.value = s.apiKey;
   const triggerRadio = document.querySelector(`input[name="trigger"][value="${s.trigger}"]`);

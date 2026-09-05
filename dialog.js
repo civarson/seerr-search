@@ -181,7 +181,7 @@ async function init() {
     return;
   }
 
-  settings = await chrome.storage.sync.get({ baseUrl: "", apiKey: "", tvSeason: "first" });
+  settings = await chrome.storage.sync.get({ baseUrl: "", apiKey: "", tvSeason: "latest" });
   if (!settings.baseUrl || !settings.apiKey) {
     showState(
       "Set your Seerr address and API key first.",
