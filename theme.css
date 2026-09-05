@@ -1,0 +1,111 @@
+/* Matches Seerr's UI (tailwind.config.js + globals.css + Button component) */
+
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("fonts/inter-latin-wght-normal.woff2") format("woff2-variations");
+}
+
+:root {
+  /* Tailwind palette values Seerr uses */
+  --gray-900: #111827; /* body background */
+  --gray-800: #1f2937; /* cards, modals */
+  --gray-700: #374151; /* input background, borders */
+  --gray-600: #4b5563;
+  --gray-500: #6b7280; /* input borders */
+  --gray-400: #9ca3af; /* labels, secondary text */
+  --gray-300: #d1d5db; /* headings, body text */
+  --gray-100: #f3f4f6;
+  --indigo-700: #4338ca;
+  --indigo-600: #4f46e5; /* button hover/solid */
+  --indigo-500: #6366f1; /* button border, links */
+  --indigo-400: #818cf8; /* link hover */
+  --green-400: #34d399;
+  --red-500: #ef4444;
+  --red-400: #f87171;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--gray-900);
+  color: var(--gray-300);
+  font-family: "Inter Variable", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* Seerr form fields: rounded-md border-gray-500 bg-gray-700 text-white sm:text-sm */
+input[type="url"],
+input[type="text"],
+input[type="password"] {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--gray-500);
+  border-radius: 6px;
+  background: var(--gray-700);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.25rem;
+  transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
+}
+
+input::placeholder { color: var(--gray-400); }
+
+input:focus {
+  outline: none;
+  border-color: var(--indigo-500);
+  box-shadow: 0 0 0 1px var(--indigo-500);
+}
+
+/* Seerr labels: text-sm font-bold text-gray-400 */
+label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.25rem;
+  color: var(--gray-400);
+}
+
+/* Seerr primary button: border-indigo-500, bg-indigo-600/80, hover solid,
+   rounded-md px-4 py-2 text-sm font-medium */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border: 1px solid var(--indigo-500);
+  border-radius: 6px;
+  background: rgba(79, 70, 229, 0.8);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.25rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 150ms ease-in-out;
+}
+
+.btn:hover {
+  background: var(--indigo-600);
+  border-color: var(--indigo-500);
+}
+
+.btn:focus-visible {
+  outline: none;
+  border-color: var(--indigo-700);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.45);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
