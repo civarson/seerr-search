@@ -1,9 +1,9 @@
 (() => {
-  let trigger = "both";
+  let trigger = "menu";
   let host = null;
   let button = null;
 
-  chrome.storage.sync.get({ trigger: "both" }, (s) => (trigger = s.trigger));
+  chrome.storage.sync.get({ trigger: "menu" }, (s) => (trigger = s.trigger));
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "sync" && changes.trigger) {
       trigger = changes.trigger.newValue;
@@ -85,7 +85,7 @@
     }
 
     const rect = sel.getRangeAt(0).getBoundingClientRect();
-    if (!rect || (rect.width === 0 && rect.height === 0)) {
+    if (rect.width === 0 && rect.height === 0) {
       hide();
       return;
     }

@@ -7,8 +7,8 @@ function getSettings() {
   return chrome.storage.sync.get(DEFAULTS);
 }
 
-async function rebuildMenus() {
-  const { trigger } = await getSettings();
+async function rebuildMenus(s) {
+  const { trigger } = s ?? await getSettings();
   await chrome.contextMenus.removeAll();
 
   chrome.contextMenus.create({
@@ -34,9 +34,9 @@ function openRequestDialog(text) {
 }
 
 chrome.runtime.onInstalled.addListener(async () => {
-  await rebuildMenus();
-  const { baseUrl } = await getSettings();
-  if (!baseUrl) chrome.runtime.openOptionsPage();
+  const s = await getSettings();
+  await rebuildMenus(s);
+  if (!s.baseUrl) chrome.runtime.openOptionsPage();
 });
 
 chrome.runtime.onStartup.addListener(rebuildMenus);

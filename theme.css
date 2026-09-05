@@ -13,7 +13,6 @@
   --gray-900: #111827; /* body background */
   --gray-800: #1f2937; /* cards, modals */
   --gray-700: #374151; /* input background, borders */
-  --gray-600: #4b5563;
   --gray-500: #6b7280; /* input borders */
   --gray-400: #9ca3af; /* labels, secondary text */
   --gray-300: #d1d5db; /* headings, body text */
@@ -23,8 +22,9 @@
   --indigo-500: #6366f1; /* button border, links */
   --indigo-400: #818cf8; /* link hover */
   --green-400: #34d399;
-  --red-500: #ef4444;
   --red-400: #f87171;
+  --blue-500: #3b82f6;
+  --blue-300: #93c5fd;
 }
 
 * { box-sizing: border-box; }
@@ -52,7 +52,7 @@ input[type="password"] {
   color: #fff;
   font-family: inherit;
   font-size: 14px;
-  line-height: 1.25rem;
+  line-height: 1.25;
   transition: border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
 }
 
@@ -70,7 +70,7 @@ label {
   margin-bottom: 4px;
   font-size: 14px;
   font-weight: 700;
-  line-height: 1.25rem;
+  line-height: 1.25;
   color: var(--gray-400);
 }
 
@@ -88,10 +88,10 @@ label {
   font-family: inherit;
   font-size: 14px;
   font-weight: 500;
-  line-height: 1.25rem;
+  line-height: 1.25;
   white-space: nowrap;
   cursor: pointer;
-  transition: all 150ms ease-in-out;
+  transition: background-color 150ms ease-in-out, border-color 150ms ease-in-out, box-shadow 150ms ease-in-out;
 }
 
 .btn:hover {

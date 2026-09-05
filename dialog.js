@@ -53,7 +53,6 @@ async function apiPost(path, body) {
     err.status = res.status;
     throw err;
   }
-  return res.json();
 }
 
 // Seerr media status: 4 = partially available, 5 = available
@@ -160,7 +159,7 @@ async function select(item, meta, r) {
     opt.textContent = label;
     modeSelect.append(opt);
   });
-  modeSelect.value = settings.tvSeason || "latest";
+  modeSelect.value = settings.tvSeason;
 
   const btn = el("button", "btn sm", "Request");
   const note = el("span", "note", "");
@@ -196,7 +195,6 @@ async function select(item, meta, r) {
   modeSelect.addEventListener("change", () => loadSeasons(modeSelect.value));
 
   btn.addEventListener("click", async () => {
-    if (!seasons) return;
     btn.disabled = true;
     modeSelect.disabled = true;
     note.className = "note";
