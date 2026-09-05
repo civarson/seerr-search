@@ -30,5 +30,5 @@ Requests are submitted as the user who owns the API key.
 
 ## Credits
 
-- [Seerr](https://github.com/seerr-team/seerr) — logo mark used in the icon, and the UI this extension imitates.
+- [Seerr](https://github.com/seerr-team/seerr) — logo mark used in the icon, and the UI this extension imitates. This extension is not created by or related to the actual Seerr project. Huge thank you to that team for creating and maintaining such an incredible application.
 - [Inter](https://github.com/rsms/inter) — bundled under the [SIL Open Font License](fonts/LICENSE).
