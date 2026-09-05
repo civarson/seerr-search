@@ -142,69 +142,106 @@ async function select(item, meta, r) {
     return;
   }
 
-  // TV: fetch all seasons, then build the dropdown
-  const modeSelect = document.createElement("select");
-  modeSelect.className = "season-select";
-  modeSelect.disabled = true;
-  const placeholderOpt = document.createElement("option");
-  placeholderOpt.textContent = "Loading seasons…";
-  modeSelect.append(placeholderOpt);
+  // TV: fetch seasons then show checkbox list
+  confirm.classList.add("confirm--tv");
 
-  const btn = el("button", "btn sm", "Request");
-  btn.disabled = true;
-  const note = el("span", "note", "");
-  confirm.append(modeSelect, btn, note);
+  const loadNote = el("span", "note", "Loading seasons…");
+  confirm.append(loadNote);
 
   let allSeasonNums;
   try {
     allSeasonNums = await getSeasonNumbers(r.id);
   } catch {
-    note.textContent = "Couldn't load seasons";
-    note.className = "result-msg err";
+    loadNote.textContent = "Couldn't load seasons";
+    loadNote.className = "result-msg err";
     return;
   }
 
-  modeSelect.replaceChildren();
-  allSeasonNums.forEach((n) => {
-    const opt = document.createElement("option");
-    opt.value = String(n);
-    opt.textContent = `Season ${n}`;
-    modeSelect.append(opt);
+  loadNote.remove();
+
+  const seasonList = el("div", "season-list");
+  const checkboxes = allSeasonNums.map((n) => {
+    const lbl = document.createElement("label");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = String(n);
+    lbl.append(cb, document.createTextNode(` Season ${n}`));
+    seasonList.append(lbl);
+    return cb;
   });
-  const allOpt = document.createElement("option");
-  allOpt.value = "all";
-  allOpt.textContent = "All seasons";
-  modeSelect.append(allOpt);
+
+  const divider = document.createElement("hr");
+  divider.className = "season-divider";
+  seasonList.append(divider);
+
+  const allLbl = document.createElement("label");
+  const allCb = document.createElement("input");
+  allCb.type = "checkbox";
+  allLbl.append(allCb, document.createTextNode(" All seasons"));
+  seasonList.append(allLbl);
+
+  confirm.append(seasonList);
 
   const tvSeason = settings.tvSeason;
   if (tvSeason === "all") {
-    modeSelect.value = "all";
+    allCb.checked = true;
+    checkboxes.forEach((cb) => { cb.disabled = true; });
   } else if (tvSeason === "latest") {
-    modeSelect.value = String(Math.max(...allSeasonNums));
+    checkboxes[checkboxes.length - 1].checked = true;
   } else {
-    modeSelect.value = String(allSeasonNums[0]);
+    checkboxes[0].checked = true;
   }
 
-  modeSelect.disabled = false;
-  btn.disabled = false;
+  const actionsRow = el("div", "confirm-actions");
+  const btn = el("button", "btn sm", "Request");
+  const note = el("span", "note", "");
+  actionsRow.append(btn, note);
+  confirm.append(actionsRow);
+
+  function syncBtn() {
+    btn.disabled = !allCb.checked && !checkboxes.some((cb) => cb.checked);
+  }
+  syncBtn();
+
+  allCb.addEventListener("change", () => {
+    checkboxes.forEach((cb) => {
+      cb.disabled = allCb.checked;
+      if (allCb.checked) cb.checked = false;
+    });
+    syncBtn();
+  });
+
+  checkboxes.forEach((cb) => {
+    cb.addEventListener("change", () => {
+      if (cb.checked) allCb.checked = false;
+      syncBtn();
+    });
+  });
 
   btn.addEventListener("click", async () => {
     btn.disabled = true;
-    modeSelect.disabled = true;
+    seasonList.querySelectorAll("input").forEach((cb) => { cb.disabled = true; });
     note.className = "note";
     note.textContent = "Requesting…";
-    const val = modeSelect.value;
-    const seasons = val === "all" ? allSeasonNums : [parseInt(val, 10)];
+    const isAll = allCb.checked;
+    const seasons = isAll
+      ? allSeasonNums
+      : checkboxes.filter((cb) => cb.checked).map((cb) => parseInt(cb.value, 10));
     try {
       await apiPost("/request", { mediaType: r.mediaType, mediaId: r.id, seasons });
       note.className = "result-msg ok";
-      note.textContent = val === "all" ? "Requested all seasons ✓" : `Requested season ${val} ✓`;
-      modeSelect.remove();
+      note.textContent = isAll
+        ? "Requested all seasons ✓"
+        : seasons.length === 1
+          ? `Requested season ${seasons[0]} ✓`
+          : `Requested ${seasons.length} seasons ✓`;
+      seasonList.remove();
       btn.remove();
       setTimeout(() => window.close(), 1600);
     } catch (e) {
       btn.disabled = false;
-      modeSelect.disabled = false;
+      allCb.disabled = false;
+      if (!allCb.checked) checkboxes.forEach((cb) => { cb.disabled = false; });
       note.className = "result-msg err";
       note.textContent = e.status === 409 ? "Already requested" : `Failed: ${e.message}`;
     }
