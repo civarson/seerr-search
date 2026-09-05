@@ -121,58 +121,104 @@ async function select(item, meta, r) {
   item.classList.add("selected");
 
   const isTv = r.mediaType === "tv";
-  const tvSeason = settings.tvSeason || "first";
-
-  const btnLabels = { first: "Request season 1", latest: "Request latest season", all: "Request all seasons" };
   const confirm = el("div", "confirm");
-  const btn = el("button", "btn sm", isTv ? btnLabels[tvSeason] : "Request movie");
-  const note = el("span", "note", "");
-  confirm.append(btn, note);
   meta.append(confirm);
 
-  let seasons = null;
-  if (isTv) {
-    if (tvSeason === "first") {
-      seasons = [1];
-      note.textContent = "Season 1";
-    } else {
+  if (!isTv) {
+    const btn = el("button", "btn sm", "Request movie");
+    const note = el("span", "note", "");
+    confirm.append(btn, note);
+    btn.addEventListener("click", async () => {
       btn.disabled = true;
-      note.textContent = "Checking seasons…";
+      note.className = "note";
+      note.textContent = "Requesting…";
       try {
-        seasons = await fetchSeasons(r.id, tvSeason);
-        note.textContent = tvSeason === "all" && seasons.length > 1
-          ? `Seasons 1–${Math.max(...seasons)}`
-          : `Season ${seasons[0]}`;
+        await apiPost("/request", { mediaType: r.mediaType, mediaId: r.id });
+        note.className = "result-msg ok";
+        note.textContent = "Requested ✓";
+        btn.remove();
+        setTimeout(() => window.close(), 1600);
+      } catch (e) {
         btn.disabled = false;
-      } catch {
-        note.textContent = "Couldn't load seasons";
         note.className = "result-msg err";
-        return;
+        note.textContent = e.status === 409 ? "Already requested" : `Failed: ${e.message}`;
       }
-    }
+    });
+    return;
   }
 
-  btn.addEventListener("click", async () => {
+  // TV: season mode dropdown + request button
+  const modeSelect = document.createElement("select");
+  modeSelect.className = "season-select";
+  [
+    { value: "first", label: "Season 1" },
+    { value: "latest", label: "Latest season" },
+    { value: "all", label: "All seasons" },
+  ].forEach(({ value, label }) => {
+    const opt = document.createElement("option");
+    opt.value = value;
+    opt.textContent = label;
+    modeSelect.append(opt);
+  });
+  modeSelect.value = settings.tvSeason || "latest";
+
+  const btn = el("button", "btn sm", "Request");
+  const note = el("span", "note", "");
+  confirm.append(modeSelect, btn, note);
+
+  let seasons = null;
+
+  async function loadSeasons(mode) {
+    note.className = "note";
+    if (mode === "first") {
+      seasons = [1];
+      note.textContent = "";
+      btn.disabled = false;
+      return;
+    }
     btn.disabled = true;
+    modeSelect.disabled = true;
+    note.textContent = "Checking…";
+    try {
+      seasons = await fetchSeasons(r.id, mode);
+      note.textContent = mode === "all" && seasons.length > 1
+        ? `Seasons 1–${Math.max(...seasons)}`
+        : `Season ${seasons[0]}`;
+      btn.disabled = false;
+    } catch {
+      seasons = null;
+      note.textContent = "Couldn't load seasons";
+      note.className = "result-msg err";
+    }
+    modeSelect.disabled = false;
+  }
+
+  modeSelect.addEventListener("change", () => loadSeasons(modeSelect.value));
+
+  btn.addEventListener("click", async () => {
+    if (!seasons) return;
+    btn.disabled = true;
+    modeSelect.disabled = true;
     note.className = "note";
     note.textContent = "Requesting…";
     try {
-      const body = { mediaType: r.mediaType, mediaId: r.id };
-      if (seasons) body.seasons = seasons;
-      await apiPost("/request", body);
+      await apiPost("/request", { mediaType: r.mediaType, mediaId: r.id, seasons });
       note.className = "result-msg ok";
-      if (!isTv) note.textContent = "Requested ✓";
-      else if (tvSeason === "all") note.textContent = "Requested all seasons ✓";
-      else note.textContent = `Requested season ${seasons[0]} ✓`;
+      note.textContent = modeSelect.value === "all"
+        ? "Requested all seasons ✓"
+        : `Requested season ${seasons[0]} ✓`;
+      modeSelect.remove();
       btn.remove();
       setTimeout(() => window.close(), 1600);
     } catch (e) {
       btn.disabled = false;
+      modeSelect.disabled = false;
       note.className = "result-msg err";
-      note.textContent =
-        e.status === 409 ? "Already requested" : `Failed: ${e.message}`;
+      note.textContent = e.status === 409 ? "Already requested" : `Failed: ${e.message}`;
     }
   });
+
+  await loadSeasons(modeSelect.value);
 }
 
 async function init() {
