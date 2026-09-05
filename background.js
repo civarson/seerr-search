@@ -1,7 +1,7 @@
 const SEARCH_ID = "seerr-search";
 const REQUEST_ID = "seerr-request";
 
-const DEFAULTS = { baseUrl: "", apiKey: "", trigger: "both" };
+const DEFAULTS = { baseUrl: "", apiKey: "", trigger: "menu", tvSeason: "first" };
 
 function getSettings() {
   return chrome.storage.sync.get(DEFAULTS);

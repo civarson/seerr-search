@@ -65,12 +65,14 @@ function statusBadge(mediaInfo) {
   return null;
 }
 
-async function latestSeason(tmdbId) {
+async function fetchSeasons(tmdbId, mode) {
   const tv = await api(`/tv/${tmdbId}`);
   const nums = (tv.seasons || [])
     .map((s) => s.seasonNumber)
     .filter((n) => n > 0);
-  return nums.length ? Math.max(...nums) : 1;
+  if (mode === "all") return nums.length ? nums : [1];
+  const latest = nums.length ? Math.max(...nums) : 1;
+  return [latest];
 }
 
 function renderResults(results) {
@@ -119,24 +121,34 @@ async function select(item, meta, r) {
   item.classList.add("selected");
 
   const isTv = r.mediaType === "tv";
+  const tvSeason = settings.tvSeason || "first";
+
+  const btnLabels = { first: "Request season 1", latest: "Request latest season", all: "Request all seasons" };
   const confirm = el("div", "confirm");
-  const btn = el("button", "btn sm", isTv ? "Request latest season" : "Request movie");
-  const note = el("span", "note", isTv ? "Checking seasons…" : "");
+  const btn = el("button", "btn sm", isTv ? btnLabels[tvSeason] : "Request movie");
+  const note = el("span", "note", "");
   confirm.append(btn, note);
   meta.append(confirm);
 
   let seasons = null;
   if (isTv) {
-    btn.disabled = true;
-    try {
-      const latest = await latestSeason(r.id);
-      seasons = [latest];
-      note.textContent = `Season ${latest}`;
-      btn.disabled = false;
-    } catch {
-      note.textContent = "Couldn't load seasons";
-      note.className = "result-msg err";
-      return;
+    if (tvSeason === "first") {
+      seasons = [1];
+      note.textContent = "Season 1";
+    } else {
+      btn.disabled = true;
+      note.textContent = "Checking seasons…";
+      try {
+        seasons = await fetchSeasons(r.id, tvSeason);
+        note.textContent = tvSeason === "all" && seasons.length > 1
+          ? `Seasons 1–${Math.max(...seasons)}`
+          : `Season ${seasons[0]}`;
+        btn.disabled = false;
+      } catch {
+        note.textContent = "Couldn't load seasons";
+        note.className = "result-msg err";
+        return;
+      }
     }
   }
 
@@ -149,9 +161,9 @@ async function select(item, meta, r) {
       if (seasons) body.seasons = seasons;
       await apiPost("/request", body);
       note.className = "result-msg ok";
-      note.textContent = isTv
-        ? `Requested season ${seasons[0]} ✓`
-        : "Requested ✓";
+      if (!isTv) note.textContent = "Requested ✓";
+      else if (tvSeason === "all") note.textContent = "Requested all seasons ✓";
+      else note.textContent = `Requested season ${seasons[0]} ✓`;
       btn.remove();
       setTimeout(() => window.close(), 1600);
     } catch (e) {
@@ -169,7 +181,7 @@ async function init() {
     return;
   }
 
-  settings = await chrome.storage.sync.get({ baseUrl: "", apiKey: "" });
+  settings = await chrome.storage.sync.get({ baseUrl: "", apiKey: "", tvSeason: "first" });
   if (!settings.baseUrl || !settings.apiKey) {
     showState(
       "Set your Seerr address and API key first.",

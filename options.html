@@ -130,7 +130,7 @@
     <fieldset>
       <legend>Request trigger</legend>
       <div class="radio-row">
-        <input type="radio" name="trigger" id="t-menu" value="menu" />
+        <input type="radio" name="trigger" id="t-menu" value="menu" checked />
         <label for="t-menu">Right-click menu only</label>
       </div>
       <div class="radio-row">
@@ -138,8 +138,24 @@
         <label for="t-button">Floating button only</label>
       </div>
       <div class="radio-row">
-        <input type="radio" name="trigger" id="t-both" value="both" checked />
+        <input type="radio" name="trigger" id="t-both" value="both" />
         <label for="t-both">Both</label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>TV season to request</legend>
+      <div class="radio-row">
+        <input type="radio" name="tvSeason" id="s-first" value="first" checked />
+        <label for="s-first">First season</label>
+      </div>
+      <div class="radio-row">
+        <input type="radio" name="tvSeason" id="s-latest" value="latest" />
+        <label for="s-latest">Latest season</label>
+      </div>
+      <div class="radio-row">
+        <input type="radio" name="tvSeason" id="s-all" value="all" />
+        <label for="s-all">All seasons</label>
       </div>
     </fieldset>
 

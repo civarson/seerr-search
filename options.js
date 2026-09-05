@@ -3,11 +3,13 @@ const keyInput = document.getElementById("apiKey");
 const saveBtn = document.getElementById("save");
 const status = document.getElementById("status");
 
-chrome.storage.sync.get({ baseUrl: "", apiKey: "", trigger: "both" }, (s) => {
+chrome.storage.sync.get({ baseUrl: "", apiKey: "", trigger: "menu", tvSeason: "first" }, (s) => {
   if (s.baseUrl) urlInput.value = s.baseUrl;
   if (s.apiKey) keyInput.value = s.apiKey;
-  const radio = document.querySelector(`input[name="trigger"][value="${s.trigger}"]`);
-  if (radio) radio.checked = true;
+  const triggerRadio = document.querySelector(`input[name="trigger"][value="${s.trigger}"]`);
+  if (triggerRadio) triggerRadio.checked = true;
+  const seasonRadio = document.querySelector(`input[name="tvSeason"][value="${s.tvSeason}"]`);
+  if (seasonRadio) seasonRadio.checked = true;
 });
 
 function setStatus(message, kind) {
@@ -37,6 +39,7 @@ async function save() {
 
   const apiKey = keyInput.value.trim();
   const trigger = document.querySelector('input[name="trigger"]:checked').value;
+  const tvSeason = document.querySelector('input[name="tvSeason"]:checked').value;
 
   // Host access so the dialog can call the Seerr API. Must happen in this
   // click handler (needs a user gesture).
@@ -46,7 +49,7 @@ async function save() {
     setStatus("Access to that address was declined — requesting won't work.", "err");
   }
 
-  chrome.storage.sync.set({ baseUrl, apiKey, trigger }, async () => {
+  chrome.storage.sync.set({ baseUrl, apiKey, trigger, tvSeason }, async () => {
     urlInput.value = baseUrl;
 
     if (granted && apiKey) {
