@@ -25,7 +25,7 @@ A Chrome extension for [Seerr](https://github.com/seerr-team/seerr). Select a mo
    - Enter your Seerr address.
    - Paste your API key (Seerr → Settings → General → API Key) — only needed for requesting; searching works without it.
    - Pick your request trigger: right-click menu, floating button, or both.
-   - Pick your default TV season selection (first, latest, or all) — overridable per request in the dialog.
+   - Pick your default TV season selection (select individual seasons or all seasons).
 4. When you save, Chrome will ask to grant the extension access to your Seerr address — this is required for the request dialog to reach the API.
 
 Requests are submitted as the user who owns the API key.
