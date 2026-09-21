@@ -65,15 +65,6 @@ function openRequestDialog(text = "") {
   chrome.windows.create({ url, type: "popup", width: 440, height: 620 });
 }
 
-chrome.action.onClicked.addListener(async () => {
-  const { baseUrl } = await getSettings();
-  if (!baseUrl) {
-    chrome.runtime.openOptionsPage();
-    return;
-  }
-  openRequestDialog("");
-});
-
 // Omnibox support (type 'seerr' + space in Chrome address bar)
 chrome.omnibox.setDefaultSuggestion({
   description: 'Search Seerr for "<match>%s</match>"',

@@ -400,8 +400,47 @@ searchForm.addEventListener("submit", (e) => {
   if (q) performSearch(q);
 });
 
+const openWebBtn = document.getElementById("openWebBtn");
+const settingsBtn = document.getElementById("settingsBtn");
+const footerHostText = document.getElementById("footerHostText");
+const statusDot = document.querySelector(".status-dot");
+const brandVersion = document.getElementById("brandVersion");
+
+if (brandVersion && typeof chrome !== "undefined" && chrome.runtime?.getManifest) {
+  brandVersion.textContent = chrome.runtime.getManifest().version;
+}
+
+openWebBtn?.addEventListener("click", () => {
+  if (settings?.baseUrl) {
+    chrome.tabs.create({ url: settings.baseUrl });
+  } else {
+    chrome.runtime.openOptionsPage();
+  }
+});
+
+settingsBtn?.addEventListener("click", () => {
+  chrome.runtime.openOptionsPage();
+});
+
+function updateFooterStatus() {
+  if (settings?.baseUrl) {
+    try {
+      const u = new URL(settings.baseUrl);
+      if (footerHostText) footerHostText.textContent = u.host;
+      statusDot?.classList.add("connected");
+    } catch {
+      if (footerHostText) footerHostText.textContent = "Configured";
+    }
+  } else {
+    if (footerHostText) footerHostText.textContent = "Click ⚙ to configure";
+    statusDot?.classList.remove("connected");
+  }
+}
+
 async function init() {
   settings = await chrome.storage.sync.get({ baseUrl: "", apiKey: "", tvSeason: "latest" });
+  updateFooterStatus();
+
   if (!settings.baseUrl || !settings.apiKey) {
     showState(
       "Set your Seerr address and API key first.",

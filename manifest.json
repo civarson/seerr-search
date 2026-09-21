@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Seerr Search",
   "version": "1.4.0",
-  "description": "Search your Seerr instance for selected text, or request movies and shows directly.",
+  "description": "Search your Seerr library and request movies and TV shows directly from your browser.",
   "permissions": [
     "contextMenus",
     "storage",
@@ -19,6 +19,7 @@
     "service_worker": "background.js"
   },
   "action": {
+    "default_popup": "dialog.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

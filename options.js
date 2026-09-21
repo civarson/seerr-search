@@ -20,6 +20,11 @@ async function loadSettings() {
 
 loadSettings();
 
+const optVersion = document.getElementById("optVersion");
+if (optVersion && typeof chrome !== "undefined" && chrome.runtime?.getManifest) {
+  optVersion.textContent = chrome.runtime.getManifest().version;
+}
+
 function setStatus(message, kind) {
   status.textContent = message;
   status.className = kind || "";

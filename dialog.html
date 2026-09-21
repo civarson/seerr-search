@@ -5,18 +5,126 @@
   <title>Seerr Search</title>
   <link rel="stylesheet" href="theme.css" />
   <style>
-    header {
+    html {
+      width: 380px;
+      min-width: 380px;
+      max-width: 380px;
+      background: var(--gray-900);
+      overflow-x: hidden;
+    }
+
+    body {
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      background: var(--gray-900);
+      color: var(--gray-300);
+      font-size: 13px;
+      line-height: 1.4;
+      min-height: 160px;
+      max-height: 580px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body::-webkit-scrollbar {
+      width: 5px;
+    }
+    body::-webkit-scrollbar-track {
+      background: var(--gray-900);
+    }
+    body::-webkit-scrollbar-thumb {
+      background: var(--gray-700);
+      border-radius: 3px;
+    }
+    body::-webkit-scrollbar-thumb:hover {
+      background: var(--gray-600);
+    }
+
+    .app-header {
       position: sticky;
       top: 0;
-      z-index: 10;
-      padding: 10px 12px;
+      z-index: 20;
       background: var(--gray-900);
       border-bottom: 1px solid var(--gray-700);
+      padding: 8px 10px;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      padding: 0 1px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      user-select: none;
+    }
+
+    .brand-icon {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .brand-name {
+      font-weight: 700;
+      font-size: 12.5px;
+      color: var(--gray-200);
+      letter-spacing: -0.01em;
+    }
+
+    .brand-version {
+      font-size: 10px;
+      padding: 1px 4px;
+      background: var(--gray-800);
+      border: 1px solid var(--gray-700);
+      border-radius: 3px;
+      color: var(--gray-400);
+      font-weight: 500;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .icon-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--gray-400);
+      cursor: pointer;
+      transition: all 120ms ease-in-out;
+    }
+
+    .icon-btn:hover {
+      color: var(--gray-200);
+      background: var(--gray-800);
+      border-color: var(--gray-700);
+    }
+
+    .icon-btn:focus-visible {
+      outline: none;
+      border-color: var(--indigo-500);
     }
 
     .search-form {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
     }
 
@@ -29,18 +137,18 @@
 
     .search-icon {
       position: absolute;
-      left: 10px;
-      width: 15px;
-      height: 15px;
+      left: 9px;
+      width: 14px;
+      height: 14px;
       color: var(--gray-400);
       pointer-events: none;
     }
 
     .search-input {
       width: 100%;
-      padding: 7px 28px 7px 32px !important;
-      font-size: 13.5px !important;
-      border-radius: 6px !important;
+      padding: 6px 26px 6px 29px !important;
+      font-size: 13px !important;
+      border-radius: 5px !important;
       background: var(--gray-800) !important;
       border-color: var(--gray-600) !important;
     }
@@ -52,15 +160,15 @@
 
     .clear-btn {
       position: absolute;
-      right: 6px;
+      right: 5px;
       background: transparent;
       border: none;
       color: var(--gray-400);
-      font-size: 17px;
+      font-size: 16px;
       cursor: pointer;
-      padding: 2px 6px;
+      padding: 2px 5px;
       line-height: 1;
-      border-radius: 4px;
+      border-radius: 3px;
       display: none;
     }
 
@@ -68,16 +176,21 @@
       color: var(--gray-200);
     }
 
-    #list { padding: 10px 12px 16px; }
+    #content {
+      flex: 1;
+      min-height: 120px;
+    }
+
+    #list { padding: 6px 8px 10px; }
 
     .item {
       display: flex;
-      gap: 12px;
-      padding: 10px;
+      gap: 10px;
+      padding: 7px 8px;
       border: 1px solid transparent;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 150ms ease-in-out, border-color 150ms ease-in-out;
+      transition: background 120ms ease-in-out, border-color 120ms ease-in-out;
     }
 
     .item:hover { background: var(--gray-800); }
@@ -89,13 +202,13 @@
     }
 
     .poster, .poster-placeholder {
-      flex: 0 0 56px;
-      width: 56px;
-      height: 84px;
-      border-radius: 6px;
+      flex: 0 0 46px;
+      width: 46px;
+      height: 69px;
+      border-radius: 5px;
       background: var(--gray-700);
       object-fit: cover;
-      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
 
     .poster-placeholder {
@@ -106,8 +219,8 @@
     }
 
     .poster-placeholder svg {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
     }
 
     .meta { min-width: 0; flex: 1; }
@@ -115,7 +228,7 @@
     .title-row {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
 
     .title {
@@ -126,18 +239,19 @@
       white-space: nowrap;
       flex: 1;
       min-width: 0;
+      font-size: 13px;
     }
 
     .seerr-link {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 3px 5px;
+      padding: 2px 4px;
       color: var(--gray-400);
-      border-radius: 4px;
+      border-radius: 3px;
       text-decoration: none;
       flex-shrink: 0;
-      transition: color 150ms ease-in-out, background-color 150ms ease-in-out;
+      transition: color 120ms ease-in-out, background-color 120ms ease-in-out;
     }
 
     .seerr-link:hover {
@@ -147,14 +261,15 @@
 
     .sub {
       color: var(--gray-400);
-      font-size: 12.5px;
-      margin-top: 2px;
+      font-size: 11.5px;
+      margin-top: 1px;
     }
 
     .overview {
       color: var(--gray-400);
-      font-size: 12.5px;
-      margin-top: 6px;
+      font-size: 11.5px;
+      margin-top: 4px;
+      line-height: 1.35;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
@@ -164,10 +279,10 @@
     /* Seerr-style rounded-full badges */
     .badge {
       display: inline-block;
-      margin-left: 6px;
-      padding: 1px 8px;
+      margin-left: 4px;
+      padding: 1px 6px;
       border-radius: 9999px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 500;
       vertical-align: 1px;
       flex-shrink: 0;
@@ -178,46 +293,46 @@
     .badge.have { background: rgba(52, 211, 153, 0.15); border: 1px solid var(--green-400); color: var(--green-400); }
 
     .confirm {
-      margin-top: 10px;
+      margin-top: 8px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
-    .btn.sm { padding: 6px 10px; font-size: 12px; }
+    .btn.sm { padding: 5px 9px; font-size: 11.5px; }
 
-    .confirm--tv { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .confirm--tv { flex-direction: column; align-items: flex-start; gap: 7px; }
 
     .season-list {
       display: flex;
       flex-direction: column;
-      max-height: 175px;
+      max-height: 155px;
       overflow-y: auto;
-      padding-right: 4px;
+      padding-right: 3px;
       width: 100%;
     }
 
     .season-list::-webkit-scrollbar {
-      width: 5px;
+      width: 4px;
     }
 
     .season-list::-webkit-scrollbar-track {
       background: rgba(31, 41, 55, 0.5);
-      border-radius: 3px;
+      border-radius: 2px;
     }
 
     .season-list::-webkit-scrollbar-thumb {
       background: var(--gray-600);
-      border-radius: 3px;
+      border-radius: 2px;
     }
 
     .season-list label {
       display: flex;
       align-items: center;
-      gap: 6px;
-      padding: 3px 0;
+      gap: 5px;
+      padding: 2px 0;
       margin-bottom: 0;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 400;
       color: var(--gray-300);
       cursor: pointer;
@@ -226,7 +341,7 @@
     .season-list label:has(input:disabled) { opacity: 0.5; cursor: default; }
 
     .season-status {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--green-400);
       margin-left: auto;
       font-weight: 500;
@@ -234,8 +349,8 @@
 
     .season-list input[type="checkbox"] {
       accent-color: var(--indigo-600);
-      width: 14px;
-      height: 14px;
+      width: 13px;
+      height: 13px;
       flex-shrink: 0;
       cursor: pointer;
     }
@@ -246,49 +361,110 @@
       width: 100%;
       border: none;
       border-top: 1px solid var(--gray-700);
-      margin: 4px 0;
+      margin: 3px 0;
     }
 
-    .confirm-actions { display: flex; align-items: center; gap: 10px; }
-
-    .confirm .note { color: var(--gray-400); font-size: 12px; }
+    .confirm-actions { display: flex; align-items: center; gap: 8px; }
+    .confirm .note { color: var(--gray-400); font-size: 11.5px; }
 
     .state {
-      padding: 36px 16px;
+      padding: 32px 14px;
       text-align: center;
       color: var(--gray-400);
     }
 
     .state.err { color: var(--red-400); }
-    .state .btn { margin-top: 14px; }
+    .state .btn { margin-top: 12px; }
 
     .empty-state {
-      padding: 48px 16px;
+      padding: 36px 14px;
       text-align: center;
       color: var(--gray-400);
     }
 
     .empty-state svg {
-      width: 44px;
-      height: 44px;
+      width: 36px;
+      height: 36px;
       color: var(--gray-600);
-      margin: 0 auto 12px;
+      margin: 0 auto 10px;
       display: block;
     }
 
     .empty-state p {
       margin: 0;
-      font-size: 13.5px;
-      line-height: 1.5;
+      font-size: 12.5px;
+      line-height: 1.45;
     }
 
-    .result-msg { font-size: 12.5px; }
+    .app-footer {
+      position: sticky;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 5px 9px;
+      background: rgba(17, 24, 39, 0.95);
+      border-top: 1px solid var(--gray-800);
+      font-size: 11px;
+      color: var(--gray-500);
+      user-select: none;
+    }
+
+    .footer-host {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 250px;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gray-600);
+      flex-shrink: 0;
+    }
+
+    .status-dot.connected {
+      background: var(--green-400);
+      box-shadow: 0 0 6px rgba(52, 211, 153, 0.5);
+    }
+
+    .footer-hint {
+      color: var(--gray-600);
+      font-size: 10px;
+    }
+
+    .result-msg { font-size: 12px; }
     .result-msg.ok { color: var(--green-400); }
     .result-msg.err { color: var(--red-400); }
   </style>
 </head>
 <body>
-  <header>
+  <header class="app-header">
+    <div class="top-bar">
+      <div class="brand">
+        <img src="icons/icon16.png" class="brand-icon" width="16" height="16" alt="" />
+        <span class="brand-name">Seerr Search</span>
+        <span class="brand-version" id="brandVersion">1.4.0</span>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="openWebBtn" class="icon-btn" title="Open Seerr in new tab" aria-label="Open Seerr">
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h4a.75.75 0 010 1.5h-4z" clip-rule="evenodd" />
+            <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06 1.06l7.247-7.247v2.684a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.684l-7.247 7.253z" clip-rule="evenodd" />
+          </svg>
+        </button>
+        <button type="button" id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+    </div>
     <form id="searchForm" class="search-form">
       <div class="search-input-wrap">
         <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
@@ -301,6 +477,13 @@
     </form>
   </header>
   <div id="content"></div>
+  <footer id="appFooter" class="app-footer">
+    <div id="footerHost" class="footer-host">
+      <span class="status-dot"></span>
+      <span id="footerHostText">Not configured</span>
+    </div>
+    <div class="footer-hint">↵ Search</div>
+  </footer>
   <script src="dialog.js"></script>
 </body>
 </html>
