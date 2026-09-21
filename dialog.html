@@ -2,29 +2,71 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Request on Seerr</title>
+  <title>Seerr Search</title>
   <link rel="stylesheet" href="theme.css" />
   <style>
     header {
       position: sticky;
       top: 0;
-      z-index: 1;
-      padding: 14px 16px;
+      z-index: 10;
+      padding: 10px 12px;
       background: var(--gray-900);
       border-bottom: 1px solid var(--gray-700);
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 700;
-      color: var(--gray-300);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    .search-form {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
 
-    header .query { color: var(--indigo-400); }
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 10px;
+      width: 15px;
+      height: 15px;
+      color: var(--gray-400);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 7px 28px 7px 32px !important;
+      font-size: 13.5px !important;
+      border-radius: 6px !important;
+      background: var(--gray-800) !important;
+      border-color: var(--gray-600) !important;
+    }
+
+    .search-input:focus {
+      background: var(--gray-700) !important;
+      border-color: var(--indigo-500) !important;
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 6px;
+      background: transparent;
+      border: none;
+      color: var(--gray-400);
+      font-size: 17px;
+      cursor: pointer;
+      padding: 2px 6px;
+      line-height: 1;
+      border-radius: 4px;
+      display: none;
+    }
+
+    .clear-btn:hover {
+      color: var(--gray-200);
+    }
 
     #list { padding: 10px 12px 16px; }
 
@@ -46,7 +88,7 @@
       cursor: default;
     }
 
-    .poster {
+    .poster, .poster-placeholder {
       flex: 0 0 56px;
       width: 56px;
       height: 84px;
@@ -56,7 +98,25 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
     }
 
+    .poster-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-500);
+    }
+
+    .poster-placeholder svg {
+      width: 24px;
+      height: 24px;
+    }
+
     .meta { min-width: 0; flex: 1; }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
 
     .title {
       font-weight: 700;
@@ -64,6 +124,25 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .seerr-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 5px;
+      color: var(--gray-400);
+      border-radius: 4px;
+      text-decoration: none;
+      flex-shrink: 0;
+      transition: color 150ms ease-in-out, background-color 150ms ease-in-out;
+    }
+
+    .seerr-link:hover {
+      color: var(--indigo-400);
+      background: var(--gray-700);
     }
 
     .sub {
@@ -91,6 +170,7 @@
       font-size: 11px;
       font-weight: 500;
       vertical-align: 1px;
+      flex-shrink: 0;
     }
 
     .badge.tv { background: rgba(99, 102, 241, 0.2); border: 1px solid var(--indigo-500); color: var(--indigo-400); }
@@ -108,7 +188,28 @@
 
     .confirm--tv { flex-direction: column; align-items: flex-start; gap: 8px; }
 
-    .season-list { display: flex; flex-direction: column; }
+    .season-list {
+      display: flex;
+      flex-direction: column;
+      max-height: 175px;
+      overflow-y: auto;
+      padding-right: 4px;
+      width: 100%;
+    }
+
+    .season-list::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .season-list::-webkit-scrollbar-track {
+      background: rgba(31, 41, 55, 0.5);
+      border-radius: 3px;
+    }
+
+    .season-list::-webkit-scrollbar-thumb {
+      background: var(--gray-600);
+      border-radius: 3px;
+    }
 
     .season-list label {
       display: flex;
@@ -122,7 +223,14 @@
       cursor: pointer;
     }
 
-    .season-list label:has(input:disabled) { opacity: 0.4; cursor: default; }
+    .season-list label:has(input:disabled) { opacity: 0.5; cursor: default; }
+
+    .season-status {
+      font-size: 11px;
+      color: var(--green-400);
+      margin-left: auto;
+      font-weight: 500;
+    }
 
     .season-list input[type="checkbox"] {
       accent-color: var(--indigo-600);
@@ -146,7 +254,7 @@
     .confirm .note { color: var(--gray-400); font-size: 12px; }
 
     .state {
-      padding: 28px 16px;
+      padding: 36px 16px;
       text-align: center;
       color: var(--gray-400);
     }
@@ -154,13 +262,44 @@
     .state.err { color: var(--red-400); }
     .state .btn { margin-top: 14px; }
 
+    .empty-state {
+      padding: 48px 16px;
+      text-align: center;
+      color: var(--gray-400);
+    }
+
+    .empty-state svg {
+      width: 44px;
+      height: 44px;
+      color: var(--gray-600);
+      margin: 0 auto 12px;
+      display: block;
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 13.5px;
+      line-height: 1.5;
+    }
+
     .result-msg { font-size: 12.5px; }
     .result-msg.ok { color: var(--green-400); }
     .result-msg.err { color: var(--red-400); }
   </style>
 </head>
 <body>
-  <header><h1>Request <span class="query" id="queryText"></span></h1></header>
+  <header>
+    <form id="searchForm" class="search-form">
+      <div class="search-input-wrap">
+        <svg class="search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
+        </svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search movies & TV shows..." autocomplete="off" spellcheck="false" />
+        <button type="button" id="clearBtn" class="clear-btn" aria-label="Clear search" title="Clear">&times;</button>
+      </div>
+      <button type="submit" class="btn sm" id="searchBtn">Search</button>
+    </form>
+  </header>
   <div id="content"></div>
   <script src="dialog.js"></script>
 </body>

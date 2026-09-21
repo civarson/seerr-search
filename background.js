@@ -26,12 +26,20 @@ async function rebuildMenus(s) {
   }
 }
 
-function openRequestDialog(text) {
-  const url = chrome.runtime.getURL(
-    `dialog.html?q=${encodeURIComponent(text.trim().slice(0, 200))}`
-  );
+function openRequestDialog(text = "") {
+  const query = text ? `?q=${encodeURIComponent(text.trim().slice(0, 200))}` : "";
+  const url = chrome.runtime.getURL(`dialog.html${query}`);
   chrome.windows.create({ url, type: "popup", width: 440, height: 620 });
 }
+
+chrome.action.onClicked.addListener(async () => {
+  const { baseUrl } = await getSettings();
+  if (!baseUrl) {
+    chrome.runtime.openOptionsPage();
+    return;
+  }
+  openRequestDialog("");
+});
 
 chrome.runtime.onInstalled.addListener(async () => {
   const s = await getSettings();

@@ -1,7 +1,10 @@
 const params = new URLSearchParams(location.search);
-const query = (params.get("q") || "").trim();
+const initialQuery = (params.get("q") || "").trim();
+
 const content = document.getElementById("content");
-document.getElementById("queryText").textContent = `"${query}"`;
+const searchForm = document.getElementById("searchForm");
+const searchInput = document.getElementById("searchInput");
+const clearBtn = document.getElementById("clearBtn");
 
 let settings = null;
 
@@ -20,6 +23,19 @@ function showState(message, isError, withOptionsBtn) {
     btn.addEventListener("click", () => chrome.runtime.openOptionsPage());
     box.append(document.createElement("br"), btn);
   }
+  content.append(box);
+}
+
+function showEmptyState() {
+  content.replaceChildren();
+  const box = el("div", "empty-state");
+  box.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"></circle>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+    </svg>
+    <p>Search your Seerr instance for movies or TV shows to request.</p>
+  `;
   content.append(box);
 }
 
@@ -55,7 +71,7 @@ async function apiPost(path, body) {
   }
 }
 
-// Seerr media status: 4 = partially available, 5 = available
+// Seerr media status: 4 = partially available, 5 = available, 2/3 = requested
 function statusBadge(mediaInfo) {
   if (!mediaInfo) return null;
   if (mediaInfo.status === 5) return "In library";
@@ -64,10 +80,76 @@ function statusBadge(mediaInfo) {
   return null;
 }
 
-async function getSeasonNumbers(tmdbId) {
+function createPoster(posterPath, title) {
+  if (posterPath) {
+    const img = document.createElement("img");
+    img.className = "poster";
+    img.alt = title || "";
+    img.src = `https://image.tmdb.org/t/p/w154${posterPath}`;
+    img.onerror = () => {
+      const fallback = createPosterPlaceholder();
+      img.replaceWith(fallback);
+    };
+    return img;
+  }
+  return createPosterPlaceholder();
+}
+
+function createPosterPlaceholder() {
+  const wrap = document.createElement("div");
+  wrap.className = "poster-placeholder";
+  wrap.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+      <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/>
+      <line x1="7" y1="2" x2="7" y2="22"/>
+      <line x1="17" y1="2" x2="17" y2="22"/>
+      <line x1="2" y1="12" x2="22" y2="12"/>
+      <line x1="2" y1="7" x2="7" y2="7"/>
+      <line x1="2" y1="17" x2="7" y2="17"/>
+      <line x1="17" y1="17" x2="22" y2="17"/>
+      <line x1="17" y1="7" x2="22" y2="7"/>
+    </svg>
+  `;
+  return wrap;
+}
+
+function createSeerrLink(mediaType, tmdbId) {
+  if (!settings?.baseUrl) return null;
+  const a = document.createElement("a");
+  a.className = "seerr-link";
+  a.title = "View on Seerr";
+  a.href = `${settings.baseUrl}/${mediaType}/${tmdbId}`;
+  a.target = "_blank";
+  a.rel = "noopener noreferrer";
+  a.innerHTML = `
+    <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+      <path fill-rule="evenodd" d="M4.25 5.5a.75.75 0 00-.75.75v8.5c0 .414.336.75.75.75h8.5a.75.75 0 00.75-.75v-4a.75.75 0 011.5 0v4A2.25 2.25 0 0112.75 17h-8.5A2.25 2.25 0 012 14.75v-8.5A2.25 2.25 0 014.25 4h4a.75.75 0 010 1.5h-4z" clip-rule="evenodd" />
+      <path fill-rule="evenodd" d="M6.194 12.753a.75.75 0 001.06 1.06l7.247-7.247v2.684a.75.75 0 001.5 0v-4.5a.75.75 0 00-.75-.75h-4.5a.75.75 0 000 1.5h2.684l-7.247 7.253z" clip-rule="evenodd" />
+    </svg>
+  `;
+  a.addEventListener("click", (e) => e.stopPropagation());
+  return a;
+}
+
+async function getSeasonDetails(tmdbId) {
   const tv = await api(`/tv/${tmdbId}`);
-  const nums = (tv.seasons || []).map((s) => s.seasonNumber).filter((n) => n > 0);
-  return nums.length ? nums : [1];
+  const availableSeasonNums = new Set();
+  const mediaSeasons = tv.mediaInfo?.seasons || [];
+  mediaSeasons.forEach((ms) => {
+    if (ms.status === 5) {
+      availableSeasonNums.add(ms.seasonNumber);
+    }
+  });
+
+  const rawSeasons = tv.seasons || [];
+  const seasons = rawSeasons
+    .filter((s) => s.seasonNumber > 0)
+    .map((s) => ({
+      seasonNumber: s.seasonNumber,
+      isAvailable: availableSeasonNums.has(s.seasonNumber),
+    }));
+
+  return seasons.length ? seasons : [{ seasonNumber: 1, isAvailable: false }];
 }
 
 function renderResults(results) {
@@ -82,19 +164,19 @@ function renderResults(results) {
     const year = date ? date.slice(0, 4) : "—";
 
     const item = el("div", "item");
-    const poster = document.createElement("img");
-    poster.className = "poster";
-    poster.alt = "";
-    if (r.posterPath) {
-      poster.src = `https://image.tmdb.org/t/p/w154${r.posterPath}`;
-    }
+    const poster = createPoster(r.posterPath, title);
 
     const meta = el("div", "meta");
-    const titleRow = el("div", "title", title);
+    const titleRow = el("div", "title-row");
+    const titleText = el("span", "title", title);
     const typeBadge = el("span", `badge ${r.mediaType}`, isTv ? "TV" : "Movie");
-    titleRow.append(typeBadge);
+    titleRow.append(titleText, typeBadge);
+
     const have = statusBadge(r.mediaInfo);
     if (have) titleRow.append(el("span", "badge have", have));
+
+    const link = createSeerrLink(r.mediaType, r.id);
+    if (link) titleRow.append(link);
 
     meta.append(titleRow, el("div", "sub", year));
     if (r.overview) meta.append(el("div", "overview", r.overview));
@@ -148,9 +230,9 @@ async function select(item, meta, r) {
   const loadNote = el("span", "note", "Loading seasons…");
   confirm.append(loadNote);
 
-  let allSeasonNums;
+  let seasonsData;
   try {
-    allSeasonNums = await getSeasonNumbers(r.id);
+    seasonsData = await getSeasonDetails(r.id);
   } catch {
     loadNote.textContent = "Couldn't load seasons";
     loadNote.className = "result-msg err";
@@ -160,12 +242,19 @@ async function select(item, meta, r) {
   loadNote.remove();
 
   const seasonList = el("div", "season-list");
-  const checkboxes = allSeasonNums.map((n) => {
+  const checkboxes = seasonsData.map((s) => {
     const lbl = document.createElement("label");
     const cb = document.createElement("input");
     cb.type = "checkbox";
-    cb.value = String(n);
-    lbl.append(cb, document.createTextNode(` Season ${n}`));
+    cb.value = String(s.seasonNumber);
+    if (s.isAvailable) {
+      cb.disabled = true;
+      cb.dataset.originallyDisabled = "true";
+    }
+    lbl.append(cb, document.createTextNode(` Season ${s.seasonNumber}`));
+    if (s.isAvailable) {
+      lbl.append(el("span", "season-status", "In library"));
+    }
     seasonList.append(lbl);
     return cb;
   });
@@ -185,11 +274,23 @@ async function select(item, meta, r) {
   const tvSeason = settings.tvSeason;
   if (tvSeason === "all") {
     allCb.checked = true;
-    checkboxes.forEach((cb) => { cb.disabled = true; });
+    checkboxes.forEach((cb) => {
+      if (!cb.dataset.originallyDisabled) cb.disabled = true;
+    });
   } else if (tvSeason === "latest") {
-    checkboxes[checkboxes.length - 1].checked = true;
+    const availableCbs = checkboxes.filter((cb) => !cb.dataset.originallyDisabled);
+    if (availableCbs.length) {
+      availableCbs[availableCbs.length - 1].checked = true;
+    } else if (checkboxes.length) {
+      checkboxes[checkboxes.length - 1].checked = true;
+    }
   } else {
-    checkboxes[0].checked = true;
+    const availableCbs = checkboxes.filter((cb) => !cb.dataset.originallyDisabled);
+    if (availableCbs.length) {
+      availableCbs[0].checked = true;
+    } else if (checkboxes.length) {
+      checkboxes[0].checked = true;
+    }
   }
 
   const actionsRow = el("div", "confirm-actions");
@@ -205,8 +306,10 @@ async function select(item, meta, r) {
 
   allCb.addEventListener("change", () => {
     checkboxes.forEach((cb) => {
-      cb.disabled = allCb.checked;
-      if (allCb.checked) cb.checked = false;
+      if (!cb.dataset.originallyDisabled) {
+        cb.disabled = allCb.checked;
+        if (allCb.checked) cb.checked = false;
+      }
     });
     syncBtn();
   });
@@ -220,12 +323,13 @@ async function select(item, meta, r) {
 
   btn.addEventListener("click", async () => {
     btn.disabled = true;
+    allCb.disabled = true;
     seasonList.querySelectorAll("input").forEach((cb) => { cb.disabled = true; });
     note.className = "note";
     note.textContent = "Requesting…";
     const isAll = allCb.checked;
     const seasons = isAll
-      ? allSeasonNums
+      ? seasonsData.map((s) => s.seasonNumber)
       : checkboxes.filter((cb) => cb.checked).map((cb) => parseInt(cb.value, 10));
     try {
       await apiPost("/request", { mediaType: r.mediaType, mediaId: r.id, seasons });
@@ -241,52 +345,33 @@ async function select(item, meta, r) {
     } catch (e) {
       btn.disabled = false;
       allCb.disabled = false;
-      if (!allCb.checked) checkboxes.forEach((cb) => { cb.disabled = false; });
+      checkboxes.forEach((cb) => {
+        if (!cb.dataset.originallyDisabled) cb.disabled = false;
+      });
       note.className = "result-msg err";
       note.textContent = e.status === 409 ? "Already requested" : `Failed: ${e.message}`;
     }
   });
 }
 
-async function init() {
-  if (!query) {
-    showState("No text selected.", true);
-    return;
-  }
-
-  settings = await chrome.storage.sync.get({ baseUrl: "", apiKey: "", tvSeason: "latest" });
-  if (!settings.baseUrl || !settings.apiKey) {
-    showState(
-      "Set your Seerr address and API key first.",
-      true,
-      true
-    );
-    return;
-  }
-
-  const granted = await chrome.permissions.contains({
-    origins: [new URL(settings.baseUrl).origin + "/*"],
-  });
-  if (!granted) {
-    showState(
-      "The extension doesn't have access to your Seerr address yet. Re-save it in settings to grant access.",
-      true,
-      true
-    );
+async function performSearch(query) {
+  const trimmed = (query || "").trim();
+  if (!trimmed) {
+    showEmptyState();
     return;
   }
 
   showState("Searching…");
   try {
-    const data = await api(`/search?query=${encodeURIComponent(query)}`);
+    const data = await api(`/search?query=${encodeURIComponent(trimmed)}`);
     const titles = (data.results || []).filter(
       (r) => r.mediaType === "movie" || r.mediaType === "tv"
     );
     if (!titles.length) {
-      showState(`No movie or TV titles matched "${query}".`, true);
+      showState(`No movie or TV titles matched "${trimmed}".`, true);
       return;
     }
-    renderResults(titles.slice(0, 12));
+    renderResults(titles.slice(0, 15));
   } catch (e) {
     showState(
       e.status === 403
@@ -298,4 +383,63 @@ async function init() {
   }
 }
 
+// Search input and clear button handlers
+searchInput.addEventListener("input", () => {
+  clearBtn.style.display = searchInput.value.trim() ? "block" : "none";
+});
+
+clearBtn.addEventListener("click", () => {
+  searchInput.value = "";
+  clearBtn.style.display = "none";
+  searchInput.focus();
+});
+
+searchForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const q = searchInput.value.trim();
+  if (q) performSearch(q);
+});
+
+async function init() {
+  settings = await chrome.storage.sync.get({ baseUrl: "", apiKey: "", tvSeason: "latest" });
+  if (!settings.baseUrl || !settings.apiKey) {
+    showState(
+      "Set your Seerr address and API key first.",
+      true,
+      true
+    );
+    return;
+  }
+
+  let origin;
+  try {
+    origin = new URL(settings.baseUrl).origin + "/*";
+  } catch {
+    showState("Invalid Seerr address in settings.", true, true);
+    return;
+  }
+
+  const granted = await chrome.permissions.contains({
+    origins: [origin],
+  });
+  if (!granted) {
+    showState(
+      "The extension doesn't have access to your Seerr address yet. Re-save it in settings to grant access.",
+      true,
+      true
+    );
+    return;
+  }
+
+  if (initialQuery) {
+    searchInput.value = initialQuery;
+    clearBtn.style.display = "block";
+    performSearch(initialQuery);
+  } else {
+    showEmptyState();
+    searchInput.focus();
+  }
+}
+
 init();
+
