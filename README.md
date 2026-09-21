@@ -7,8 +7,10 @@ A Chrome extension for [Seerr](https://github.com/seerr-team/seerr). Select a mo
 ## Features
 
 - **Search** — right-click selected text → *Search Seerr for "…"* opens your instance's search results in a new tab.
+- **Omnibox Search** — type `seerr` followed by space in the Chrome address bar to quickly search your Seerr instance directly.
+- **Toolbar Action** — click the pinned toolbar icon anytime to open the quick-search dialog with editable search query and instant re-search.
 - **Request** — via the right-click menu or a floating button that appears near selected text (configurable). A confirmation dialog shows matching movies and TV shows (people are filtered out), with posters and library/request status. Nothing is requested until you confirm.
-- TV requests let you pick individual seasons, multiple seasons, or all seasons directly in the dialog. Your preferred default is configurable in settings.
+- TV requests let you pick individual seasons, multiple seasons, or all seasons directly in the dialog. Seasons already in your library are automatically recognized and protected.
 - UI styled to match Seerr itself, Inter Variable and all.
 
 ## Screenshots
@@ -32,7 +34,7 @@ Requests are submitted as the user who owns the API key.
 
 ## Notes
 
-- The floating button requires a content script on all pages, which is why Chrome shows the "read and change all your data on websites" warning. The script only watches text selection and renders the button.
+- **Privacy by Design**: By default (right-click menu only), the extension requires zero website data permissions. If you enable the optional floating button, Chrome will ask for page access permission so the button can be displayed next to selected text.
 - Works with instances reached over LAN, Tailscale, or a reverse proxy — the address is just a URL, including any subpath.
 
 ## Credits

@@ -3,21 +3,12 @@
   "name": "Seerr Search",
   "version": "1.3.0",
   "description": "Search your Seerr instance for selected text, or request movies and shows directly.",
-  "permissions": ["contextMenus", "storage"],
+  "permissions": ["contextMenus", "storage", "scripting"],
   "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "omnibox": { "keyword": "seerr" },
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
-    }
-  ],
-  "web_accessible_resources": [
-    { "resources": ["fonts/*"], "matches": ["<all_urls>"] }
-  ],
   "action": {
     "default_icon": {
       "16": "icons/icon16.png",

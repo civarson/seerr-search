@@ -15,18 +15,8 @@
     return trigger === "button" || trigger === "both";
   }
 
-  function injectFont() {
-    if (document.getElementById("seerr-ext-font")) return;
-    const style = document.createElement("style");
-    style.id = "seerr-ext-font";
-    const fontUrl = chrome.runtime.getURL("fonts/inter-latin-wght-normal.woff2");
-    style.textContent = `@font-face{font-family:'Seerr Ext Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url('${fontUrl}') format('woff2-variations');}`;
-    (document.head || document.documentElement).appendChild(style);
-  }
-
   function ensureButton() {
     if (host) return;
-    injectFont();
 
     host = document.createElement("div");
     host.style.cssText =
@@ -44,7 +34,7 @@
         border-radius: 6px;
         background: rgba(79, 70, 229, 0.9);
         color: #fff;
-        font-family: 'Seerr Ext Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         font-size: 13px;
         font-weight: 500;
         line-height: 1.25;
@@ -92,7 +82,8 @@
 
     ensureButton();
     button.style.display = "block";
-    button.style.left = `${rect.left + window.scrollX}px`;
+    const left = Math.max(8, Math.min(window.innerWidth - 160, rect.left + window.scrollX));
+    button.style.left = `${left}px`;
     button.style.top = `${rect.bottom + window.scrollY + 8}px`;
   }
 
