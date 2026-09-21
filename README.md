@@ -13,12 +13,6 @@ A Chrome extension for [Seerr](https://github.com/seerr-team/seerr). Select a mo
 - TV requests let you pick individual seasons, multiple seasons, or all seasons directly in the dialog. Seasons already in your library are automatically recognized and protected.
 - UI styled to match Seerr itself, Inter Variable and all.
 
-## Screenshots
-
-<img src="screenshots/dialog.png" width="420" alt="Right-click context menu showing Seerr Search options, with the floating Request button visible" />
-<img src="screenshots/dialog-add.png" width="420" alt="Request dialog showing TV season checkboxes" />
-<img src="screenshots/options.png" width="420" alt="Seerr Search settings page" />
-
 ## Install
 
 1. Download or clone this repo.
