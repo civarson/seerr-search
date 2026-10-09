@@ -4,6 +4,8 @@
 
 A Chrome extension for [Seerr](https://github.com/seerr-team/seerr). Select a movie or TV show title on any page, then search your Seerr instance for it — or request it directly without leaving the page.
 
+Download from the [Chrome Web Store](https://chromewebstore.google.com/detail/seerr-search/bhjmbnjfpikkicoipoebgjcldkkbhaij).
+
 ## Features
 
 - **Search** — right-click selected text → *Search Seerr for "…"* opens your instance's search results in a new tab.
