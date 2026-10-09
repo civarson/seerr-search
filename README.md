@@ -4,7 +4,7 @@
 
 A Chrome extension for [Seerr](https://github.com/seerr-team/seerr). Select a movie or TV show title on any page, then search your Seerr instance for it — or request it directly without leaving the page.
 
-Download from the [Chrome Web Store](https://chromewebstore.google.com/detail/seerr-search/bhjmbnjfpikkicoipoebgjcldkkbhaij).
+Download from the <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/Google_Chrome_Web_Store_icon_2022.svg" width="16" height="16" /> [Chrome Web Store](https://chromewebstore.google.com/detail/seerr-search/bhjmbnjfpikkicoipoebgjcldkkbhaij).
 
 ## Features
 
